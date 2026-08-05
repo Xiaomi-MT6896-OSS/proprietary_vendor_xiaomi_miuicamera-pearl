@@ -1,0 +1,23 @@
+From xaga-miui-camera-compat
+Subject: [PATCH] Assume that mod_device is global
+
+The MIUI camera otherwise launches the missing HyperOS Security Center
+permission activity and exits when its result is canceled.
+
+---
+ smali_classes4/fs/a.smali | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/smali_classes4/fs/a.smali b/smali_classes4/fs/a.smali
+index pearl..global 100644
+--- a/smali_classes4/fs/a.smali
++++ b/smali_classes4/fs/a.smali
+@@ -35,7 +35,7 @@
+     const-string v1, "_global"
+
+     invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+
+-    move-result v0
++    const/4 v0, 0x1
+
+     sput-boolean v0, Lfs/a;->a:Z

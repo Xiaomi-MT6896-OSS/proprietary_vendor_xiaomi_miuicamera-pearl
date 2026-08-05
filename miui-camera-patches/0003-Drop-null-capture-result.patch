@@ -1,0 +1,30 @@
+From pearl-miui-camera-compat
+Subject: [PATCH] Drop null capture metadata safely
+
+Some vendor capture paths deliver a null TotalCaptureResult to the saver.
+Return empty metadata instead of crashing the camera process and leaving the
+parallel post-processing queue full.
+
+---
+ smali_classes2/p9/c.smali | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/smali_classes2/p9/c.smali b/smali_classes2/p9/c.smali
+index pearl..compat 100644
+--- a/smali_classes2/p9/c.smali
++++ b/smali_classes2/p9/c.smali
+@@ -185,4 +185,14 @@
+ .method public static c(Landroid/hardware/camera2/TotalCaptureResult;)Ljh/b;
+     .locals 10
+
++    if-nez p0, :result_present
++
++    new-instance p0, Ljh/b;
++
++    invoke-direct {p0}, Ljh/b;-><init>()V
++
++    return-object p0
++
++    :result_present
++
+     sget-object v0, Landroid/hardware/camera2/CaptureResult;->SENSOR_EXPOSURE_TIME:Landroid/hardware/camera2/CaptureResult$Key;

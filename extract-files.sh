@@ -61,6 +61,20 @@ fi
 
 function blob_fixup() {
     case "${1}" in
+        system/priv-app/MiuiCamera/MiuiCamera.apk)
+            [ "$2" = "" ] && return 0
+            local apktool="${ANDROID_ROOT}/prebuilts/extract-tools/common/apktool/apktool.jar"
+            local apk_dir
+            apk_dir="$(mktemp -d)"
+            java -jar "${apktool}" d -f -o "${apk_dir}" "${2}"
+            patch -d "${apk_dir}" -p1 < "${MY_DIR}/miui-camera-patches/0001-Assume-that-mod_device-is-global.patch"
+            patch -d "${apk_dir}" -p1 < "${MY_DIR}/miui-camera-patches/0002-Fix-rebuilt-resource-and-beauty-fallbacks.patch"
+            patch -d "${apk_dir}" -p1 < "${MY_DIR}/miui-camera-patches/0003-Drop-null-capture-result.patch"
+            mkdir -p "${apk_dir}/assets/obfu_res/res/drawable"
+            cp "${apk_dir}/res/drawable/ic_west_coast_princess.webp" "${apk_dir}/assets/obfu_res/res/drawable/ic_west_coast_princess.webp"
+            java -jar "${apktool}" b "${apk_dir}" -o "${2}"
+            rm -rf "${apk_dir}"
+            ;;
         system/lib64/libcamera_algoup_jni.xiaomi.so)
             [ "$2" = "" ] && return 0
             grep -q "libgui_shim_miuicamera.so" "${2}" || "${PATCHELF}" --add-needed "libgui_shim_miuicamera.so" "${2}"
@@ -73,7 +87,7 @@ function blob_fixup() {
             ;;
         system/lib64/vendor.mediatek.hardware.camera.isphal-V1-ndk.so)
             [ "$2" = "" ] && return 0
-            "${PATCHELF}" --replace-needed "android.hardware.graphics.common-V5-ndk.so" "android.hardware.graphics.common-V6-ndk.so" "${2}"
+            "${PATCHELF}" --replace-needed "android.hardware.graphics.common-V5-ndk.so" "android.hardware.graphics.common-V7-ndk.so" "${2}"
             ;;
         *)
             return 1
